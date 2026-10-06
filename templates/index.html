@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Video Saver for X – Download public videos</title>
+<meta name="description" content="Paste a public X (Twitter) post link and get a direct MP4 download link.">
+<style>
+  :root { --bg:#0f1115; --card:#181b22; --text:#e8eaed; --muted:#9aa0a6; --accent:#4f8cff; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--text); }
+  main { max-width:720px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:1.8rem; margin:32px 0 8px; }
+  p.sub { color:var(--muted); margin-top:0; }
+  form { display:flex; gap:8px; margin:24px 0; }
+  input { flex:1; padding:14px; border-radius:10px; border:1px solid #2a2f3a; background:var(--card); color:var(--text); font-size:1rem; }
+  button { padding:14px 22px; border:0; border-radius:10px; background:var(--accent); color:#fff; font-size:1rem; cursor:pointer; }
+  button:disabled { opacity:.6; cursor:wait; }
+  .card { background:var(--card); border-radius:12px; padding:16px; margin:16px 0; }
+  .card img { width:100%; border-radius:8px; }
+  .dl { display:inline-block; margin:8px 8px 0 0; padding:10px 16px; border-radius:8px; background:var(--accent); color:#fff; text-decoration:none; }
+  .err { color:#ff7b7b; }
+  .ad { min-height:90px; margin:24px 0; border:1px dashed #2a2f3a; border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:.8rem; }
+  footer { color:var(--muted); font-size:.85rem; margin-top:48px; }
+  footer a { color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>X Video Downloader</h1>
+  <p class="sub">Paste the link of a public post, then pick a quality.</p>
+
+  <!-- AD SLOT 1: paste your ad network's code here -->
+  <div class="ad">Ad space</div>
+
+  <form id="f">
+    <input id="url" type="url" placeholder="https://x.com/username/status/123456789" required>
+    <button id="go">Get video</button>
+  </form>
+  <div id="out"></div>
+
+  <!-- AD SLOT 2 -->
+  <div class="ad">Ad space</div>
+
+  <footer>
+    Only download content you own or have permission to use. This site is not affiliated with X Corp.
+    Videos are fetched directly from X's servers; we do not store them. <a href="/privacy">Privacy &amp; takedowns</a>
+  </footer>
+</main>
+<script>
+const f = document.getElementById('f'), out = document.getElementById('out'), btn = document.getElementById('go');
+f.addEventListener('submit', async e => {
+  e.preventDefault();
+  btn.disabled = true; out.textContent = 'Fetching…';
+  try {
+    const r = await fetch('/api/info', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({url: document.getElementById('url').value})});
+    const d = await r.json();
+    out.innerHTML = '';
+    if (!r.ok) { out.innerHTML = '<p class="err"></p>'; out.firstChild.textContent = d.error || 'Something went wrong.'; return; }
+    d.videos.forEach(v => {
+      const c = document.createElement('div'); c.className = 'card';
+      if (v.thumbnail) { const i = document.createElement('img'); i.src = v.thumbnail; i.alt = ''; c.appendChild(i); }
+      const t = document.createElement('p'); t.textContent = v.title; c.appendChild(t);
+      v.formats.forEach(x => {
+        const a = document.createElement('a'); a.className = 'dl'; a.href = x.url; a.target = '_blank';
+        a.rel = 'noopener noreferrer'; a.download = ''; a.textContent = 'Download ' + x.quality; c.appendChild(a);
+      });
+      out.appendChild(c);
+    });
+  } catch { out.innerHTML = '<p class="err">Network error. Try again.</p>'; }
+  finally { btn.disabled = false; }
+});
+</script>
+</body>
+</html>

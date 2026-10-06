@@ -14,5 +14,5 @@ Put it behind Nginx/Caddy with HTTPS. Any small VPS (or Render/Railway/Fly) work
 - Add Redis storage to flask-limiter if you run more than one worker.
 
 ## Before adding ads
-- Replace YOUR-EMAIL@example.com in templates/privacy.html and keep a working takedown process.
+- Replace sangura.bren@gmail.com in templates/privacy.html and keep a working takedown process.
 - Paste ad code into the two "AD SLOT" blocks in templates/index.html.
